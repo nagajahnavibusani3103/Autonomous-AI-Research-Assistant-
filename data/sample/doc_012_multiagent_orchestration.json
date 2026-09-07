@@ -1,0 +1,12 @@
+{
+  "docId": "DOC-012",
+  "title": "Scalable Multi-Agent Orchestration and Deterministic Research Workflows",
+  "source": "IEEE Transactions on Systems, Man, and Cybernetics, 2024",
+  "category": "AI Orchestration Systems",
+  "content": "Autonomous research systems require structured workflow orchestration to execute complex multi-step information gathering without erratic non-deterministic behavior. Rather than relying entirely on unconstrained stochastic agents, deterministic research orchestrators coordinate specialized pipelines for query decomposition, inverted index retrieval, passage reranking, and provenance tracking. Sub-query expansion breaks high-level research questions into targeted conceptual facets, maximizing recall across specialized document indices. Deduplication filters eliminate redundant evidence across sub-queries, and graph-based extractive summarizers synthesize coherent executive briefs. Grounding every assertion with direct document citations ensures verifiable auditability, making deterministic multi-agent architectures ideal for enterprise compliance, legal discovery, and scientific literature reviews.",
+  "metadata": {
+    "author": "Dr. Sophia Ramos and Team",
+    "keywords": "autonomous agents, orchestration, deterministic workflows, research synthesis, provenance",
+    "year": "2024"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "docId": "DOC-011",
+  "title": "Zero-Trust Architecture and Behavioral Anomaly Detection Using AI",
+  "source": "Journal of Network and Computer Applications, 2024",
+  "category": "Zero Trust Security",
+  "content": "Zero-trust network architecture operates under the core principle of continuous verification and explicit trust minimization. Integrating artificial intelligence into zero-trust control planes enables continuous user and entity behavior analytics. Machine learning models construct dynamic risk baselines by profiling normal login times, geolocation variance, resource access patterns, and data exfiltration velocity. When an identity exhibits statistically significant behavioral drift, the zero-trust policy engine triggers step-up multi-factor authentication or dynamically revokes endpoint credentials. AI-driven identity analytics transform static perimeter defenses into adaptive, self-healing security environments resilient to compromised insider credentials.",
+  "metadata": {
+    "author": "Marcus Thorne and Linus Sterling",
+    "keywords": "zero trust, UEBA, behavioral anomaly, continuous authentication, identity security",
+    "year": "2024"
+  }
+}

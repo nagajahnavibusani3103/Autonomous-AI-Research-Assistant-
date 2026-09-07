@@ -1,0 +1,83 @@
+[
+  {
+    "queryId": "Q01",
+    "query": "machine learning cybersecurity threat detection",
+    "relevantDocIds": ["DOC-001", "DOC-002", "DOC-003", "DOC-008", "DOC-011"],
+    "gradedRelevance": {
+      "DOC-001": 3,
+      "DOC-002": 2,
+      "DOC-003": 2,
+      "DOC-008": 2,
+      "DOC-011": 1
+    }
+  },
+  {
+    "queryId": "Q02",
+    "query": "deep learning intrusion detection network anomaly",
+    "relevantDocIds": ["DOC-002", "DOC-001", "DOC-011", "DOC-008"],
+    "gradedRelevance": {
+      "DOC-002": 3,
+      "DOC-001": 2,
+      "DOC-011": 2,
+      "DOC-008": 1
+    }
+  },
+  {
+    "queryId": "Q03",
+    "query": "automated malware classification static dynamic features",
+    "relevantDocIds": ["DOC-003", "DOC-001"],
+    "gradedRelevance": {
+      "DOC-003": 3,
+      "DOC-001": 2
+    }
+  },
+  {
+    "queryId": "Q04",
+    "query": "inverted index posting list vector space model information retrieval",
+    "relevantDocIds": ["DOC-004", "DOC-005"],
+    "gradedRelevance": {
+      "DOC-004": 3,
+      "DOC-005": 2
+    }
+  },
+  {
+    "queryId": "Q05",
+    "query": "TF-IDF BM25 term weighting ranking",
+    "relevantDocIds": ["DOC-005", "DOC-004"],
+    "gradedRelevance": {
+      "DOC-005": 3,
+      "DOC-004": 2
+    }
+  },
+  {
+    "queryId": "Q06",
+    "query": "extractive text summarization graph TextRank PageRank",
+    "relevantDocIds": ["DOC-006", "DOC-009", "DOC-012"],
+    "gradedRelevance": {
+      "DOC-006": 3,
+      "DOC-009": 2,
+      "DOC-012": 1
+    }
+  },
+  {
+    "queryId": "Q07",
+    "query": "adversarial attacks evasion poisoning neural network security",
+    "relevantDocIds": ["DOC-008", "DOC-001", "DOC-002"],
+    "gradedRelevance": {
+      "DOC-008": 3,
+      "DOC-001": 1,
+      "DOC-002": 1
+    }
+  },
+  {
+    "queryId": "Q08",
+    "query": "autonomous research orchestration deterministic synthesis provenance",
+    "relevantDocIds": ["DOC-012", "DOC-009", "DOC-006", "DOC-010"],
+    "gradedRelevance": {
+      "DOC-012": 3,
+      "DOC-009": 3,
+      "DOC-006": 1,
+      "DOC-010": 1
+    }
+  }
+]

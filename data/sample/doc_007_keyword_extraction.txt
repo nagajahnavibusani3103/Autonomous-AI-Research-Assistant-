@@ -1,0 +1,4 @@
+DOC-007
+Keyword Extraction and Lexical Ranking in Unstructured Text Corpora
+Information Sciences, Vol. 580, 2023
+Automatic keyword extraction is crucial for document indexing, digital categorization, and accelerated literature review. Unsupervised extraction methodologies evaluate candidate n-grams based on statistical dispersion, positional primacy, and lexical specificity. Phrases appearing in document titles and opening paragraphs frequently encapsulate the core thesis of academic articles. By combining term frequency, inverse document frequency, and word co-occurrence graphs, algorithms isolate critical domain keywords with high precision. Filtering candidate tokens through parts-of-speech taggers or linguistic stop-word lexicons eliminates syntactic noise while preserving content-bearing nouns and adjectives. Extracted keywords serve as dynamic index keys, enabling faceted search and semantic cross-linking across disparate research disciplines.

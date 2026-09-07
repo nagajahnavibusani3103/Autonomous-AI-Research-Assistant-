@@ -1,0 +1,45 @@
+# Build & Compiled artifacts
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Environment & Secrets - CRITICAL
+.env
+*.env
+secrets/
+*.pem
+*.key
+*.cert
+*.credentials
+
+# Properties with sensitive credentials (only commit config.example.properties)
+application.properties
+application-local.properties
+config.properties
+*.local.properties
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# IDE and Editor Files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+*.sublime-project
+*.sublime-workspace
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local Repository Storage (Generated at runtime by FileRepository)
+data/storage/
+data/runtime/
