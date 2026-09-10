@@ -40,8 +40,7 @@ The primary objective is to engineer a serious **AI/ML + Information Retrieval +
   - Strict path canonicalization preventing directory traversal attacks (`../../etc/passwd`).
   - Resource protection capping file sizes (10 MB), query lengths (500 chars), and $K$ bounds ($1 \le K \le 100$).
 - **Benchmark Evaluation Framework**: Ground-truth benchmark suite calculating Precision@K, Recall@K, F1@K, Mean Reciprocal Rank (MRR), and Normalized Discounted Cumulative Gain (nDCG@K).
-- **Polished Java CLI Frontend**: Dual-mode terminal interface supporting direct command execution and an interactive REPL shell (`antigravity> `).
-
+- **Polished Java CLI Frontend**: Dual-mode terminal interface supporting direct command execution and an interactive REPL shell 
 ---
 
 ## 4. Architecture
@@ -51,13 +50,13 @@ The application adheres strictly to the **Senior-SDE single frontend and single 
 ```text
 +------------------------------------------------------------------+
 |                     Java CLI Frontend Layer                      |
-|                  (AntigravityFrontend.java)                      |
+|                                       |
 +---------------------------------+--------------------------------+
                                   |
                                   v
 +------------------------------------------------------------------+
 |               Engine Facade & Security Gateway                   |
-|                   (AntigravityBackend.java)                      |
+|                                         |
 |      SecurityManager * ConfigurationManager * AuditLogger        |
 +---------------------------------+--------------------------------+
                                   |
@@ -118,17 +117,14 @@ Autonomous-AI-Research-Assistant/
 ├── src/
 │   ├── main/
 │   │   ├── java/
-│   │   │   └── com/antigravity/
-│   │   │       ├── AntigravityFrontend.java # EXACTLY ONE CLI Frontend Source File
-│   │   │       └── AntigravityBackend.java  # EXACTLY ONE Backend Engine Source File
+│   │   │   
 │   │   │
 │   │   └── resources/
 │   │       └── config.example.properties    # Sanitized configuration template
 │   │
 │   └── test/
 │       └── java/
-│           └── com/antigravity/
-│               └── AntigravityTestSuite.java# Comprehensive JUnit 5 test suite
+│          
 │
 ├── data/
 │   ├── sample/                              # Realistic AI/ML & Cybersecurity corpus
@@ -201,11 +197,9 @@ Never hardcode or commit database credentials. The application reads configurati
 ```bash
 # Linux / macOS
 export MONGODB_URI="mongodb+srv://<username>:<password>@cluster0.mongodb.net/?retryWrites=true&w=majority"
-export MONGODB_DATABASE="antigravity_research"
 
 # Windows PowerShell
 $env:MONGODB_URI = "mongodb+srv://<username>:<password>@cluster0.mongodb.net/?retryWrites=true&w=majority"
-$env:MONGODB_DATABASE = "antigravity_research"
 ```
 
 ### Automatic Local Fallback:
@@ -353,7 +347,7 @@ SYSTEM LATENCY & RESOURCE PROFILE:
 
 ## 11. Testing & Verification
 
-The project includes an extensive test suite in `src/test/java/com/antigravity/AntigravityTestSuite.java`.
+The project includes an extensive test suite
 
 ### Run Automated Tests:
 ```bash
