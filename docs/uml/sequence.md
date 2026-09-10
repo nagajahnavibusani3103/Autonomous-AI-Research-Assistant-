@@ -60,32 +60,50 @@ sequenceDiagram
     User->>CLI: research "What are the applications of ML in cybersecurity?"
     CLI->>Facade: research(question)
     Facade->>Orch: conductResearch(question)
-    
     Orch->>Plan: generateSubQueries(question)
-    Plan-->>Orch: [Q1, Q2 (threat detection), Q3 (adversarial attacks), Q4 (zero trust)]
-    
-    Orch->>Plan: createPlan(question, subQueries)
-    Plan-->>Orch: List<String> planSteps
+    Plan-->>Orch: [Q1 (original), Q2 (threat detection), Q3 (adversarial attacks), Q4 (zero trust)]
     
     loop For each sub-query
-        Orch->>Evid: collectEvidence(rankingEngine, index, subQueries, topDocs)
-        Evid->>Rank: search(subQuery, 3, minScore)
-        Rank-->>Evid: candidate docs
-        Evid->>Evid: sentence segmentation & relevance scoring
-        Evid->>Evid: Jaccard deduplication (overlap > 0.60 filtered)
+        Orch->>Rank: search(subQuery, 5, minScore)
+        Rank-->>Orch: List<SearchResult>
+        Orch->>Evid: extractPassages(searchResults, subQuery)
+        Evid-->>Orch: List<EvidenceSnippet>
     end
-    Evid-->>Orch: List<EvidenceSnippet> rawEvidence
 
-    Orch->>Prov: assignCitations(rawEvidence)
-    Prov-->>Orch: List<EvidenceSnippet> with [C1], [C2] + Map citations
-
-    Orch->>KW: extractKeywords(retrievedDocs, index, 5)
-    KW-->>Orch: List<Entry<String, Double>> topKeywords
-
-    Orch->>Repo: saveResearchSession(session)
-    Repo-->>Orch: session recorded
-    
+    Orch->>Evid: deduplicatePassages(allPassages, jaccardThreshold = 0.60)
+    Evid-->>Orch: Deduplicated Passages
+    Orch->>Prov: assignCitations(deduplicatedPassages)
+    Prov-->>Orch: [C1, C2, C3...] Provenance Registry
+    Orch->>KW: extractCorpusKeywords(topDocs, 8)
+    KW-->>Orch: Salient Keywords List
     Orch-->>Facade: ResearchReport
+    Facade->>Repo: saveResearchSession(session)
     Facade-->>CLI: ResearchReport
-    CLI-->>User: Render Boxed Research Brief (Plan, Findings, Citations, Keywords, Metrics)
+    CLI-->>User: Formatted Multi-Query Research Brief with Verifiable Citations
+```
+
+---
+
+## 3. Algorithmic Complexity Telemetry Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Researcher / Reviewer
+    participant CLI as AntigravityFrontend
+    participant Facade as EngineFacade
+    participant Rank as RankingEngine
+    participant Idx as InvertedIndex
+
+    User->>CLI: complexity "machine learning intrusion detection"
+    CLI->>Facade: getComplexityProfile(query)
+    Facade->>Rank: search(query, 5, minScore)
+    Note over Rank: Telemetry counters recorded:<br/>Q, M, P, K, executionTimeNanos
+    Rank-->>Facade: List<SearchResult>
+    Facade->>Rank: getLastComplexityProfile()
+    Rank->>Idx: getDocumentCount(), getVocabularySize(), getTotalTokens(), getAvgDocLength()
+    Idx-->>Rank: Corpus metadata
+    Rank-->>Facade: ComplexityProfile Record
+    Facade-->>CLI: ComplexityProfile Record
+    CLI-->>User: Side-by-side Asymptotic Matrix + Empirical Telemetry + Bound Verification
 ```

@@ -104,6 +104,7 @@ public final class AntigravityFrontend {
                 case "evaluate" -> handleEvaluate(engine);
                 case "health" -> handleHealth(engine);
                 case "config" -> handleConfig();
+                case "complexity" -> handleComplexity(args, engine);
                 case "server", "serve", "localhost" -> handleServer(args, engine);
                 default -> {
                     System.out.println(RED + "Unknown command: '" + cmd + "'. Type 'help' for documentation." + RESET);
@@ -128,6 +129,7 @@ public final class AntigravityFrontend {
         System.out.printf("  %-32s %s%n", GREEN + "summarize <docId> [sentences]" + RESET, "Graph-based TextRank extractive summary of a specific document");
         System.out.printf("  %-32s %s%n", GREEN + "keywords <docId> [topN]" + RESET, "Extract high-salience domain keywords using TF-IDF & positional weights");
         System.out.printf("  %-32s %s%n", GREEN + "stats" + RESET, "Display corpus, inverted index, vocabulary, and storage statistics");
+        System.out.printf("  %-32s %s%n", GREEN + "complexity [query]" + RESET, "Theoretical asymptotic bounds & empirical runtime telemetry");
         System.out.printf("  %-32s %s%n", GREEN + "evaluate" + RESET, "Run benchmark suite (Precision@K, Recall@K, MRR, nDCG@K vs Baseline)");
         System.out.printf("  %-32s %s%n", GREEN + "health" + RESET, "Perform full system diagnostics (JVM, Corpus, Index, MongoDB, Config)");
         System.out.printf("  %-32s %s%n", GREEN + "config" + RESET, "Display active system configuration (with all credentials safely masked)");
@@ -348,6 +350,56 @@ public final class AntigravityFrontend {
         System.out.println("----------------------------------------------------------------------");
     }
 
+    private static void handleComplexity(String[] args, AntigravityBackend.EngineFacade engine) {
+        String query = args.length > 1 ? args[1] : "machine learning intrusion detection";
+        AntigravityBackend.ComplexityProfile cp = engine.getComplexityProfile(query);
+
+        System.out.println();
+        System.out.println(CYAN + BOLD + "+==================================================================================================+" + RESET);
+        System.out.println(CYAN + BOLD + "|                 ALGORITHMIC COMPLEXITY DERIVATION & EMPIRICAL TELEMETRY                         |" + RESET);
+        System.out.println(CYAN + BOLD + "+==================================================================================================+" + RESET);
+        System.out.println();
+        System.out.println(BOLD + "1. THEORETICAL ASYMPTOTIC COMPLEXITY MATRIX:" + RESET);
+        System.out.println("   Complexity Variables: N=Documents, L=Avg Doc Length, T=Corpus Tokens, V=Vocab, Q=Query Terms,");
+        System.out.println("                          M=Candidates, K=Top-K, S=Sentences, I=Iterations, P=Postings Traversed");
+        System.out.println();
+        System.out.println("  +-----------------------------+-------------------+-------------------+-------------------+-------------------+");
+        System.out.println("  | Subsystem / Operation       | Best-Case Time    | Average-Case Time | Worst-Case Time   | Space Complexity  |");
+        System.out.println("  +-----------------------------+-------------------+-------------------+-------------------+-------------------+");
+        System.out.println("  | Inverted Index Build        | O(N * L)          | O(N * L)          | O(N * L)          | O(T + V)          |");
+        System.out.println("  | Text Preprocessing (Doc)    | O(L)              | O(L)              | O(L)              | O(L)              |");
+        System.out.println("  | TF-IDF Sparse Cosine Search | O(Q)              | O(P + M log K)    | O(Q * N + N log K)| O(M + K)          |");
+        System.out.println("  | TextRank Summarization      | O(S * L_s)        | O(S^2*L_s + I*S^2)| O(S^2*L_s + I*S^2)| O(S^2)            |");
+        System.out.println("  | Salient Keyword Extraction  | O(U)              | O(U log U)        | O(U log U)        | O(U)              |");
+        System.out.println("  | Research Orchestrator       | O(R * (P+M log K))| O(R * (P+M log K))| O(R*(Q*N+N log K))| O(R * K)          |");
+        System.out.println("  +-----------------------------+-------------------+-------------------+-------------------+-------------------+");
+        System.out.println();
+        System.out.println(BOLD + "2. EMPIRICAL RUNTIME TELEMETRY (Measured on Sample Query):" + RESET);
+        System.out.printf("  * Sample Query Evaluated    : \"%s\"%n", cp.lastQuery());
+        System.out.printf("  * Total Corpus Docs (N)     : %d documents%n", cp.corpusDocuments());
+        System.out.printf("  * Vocabulary Size (V)       : %d terms%n", cp.vocabularySize());
+        System.out.printf("  * Total Corpus Tokens (T)   : %d tokens%n", cp.totalTokens());
+        System.out.printf("  * Avg Document Length (L)   : %.2f tokens/doc%n", cp.avgDocumentLength());
+        System.out.printf("  * Query Terms Analyzed (Q)  : %d terms%n", cp.queryTermsCount());
+        System.out.printf("  * Candidate Docs Matched (M): %d documents%n", cp.candidateDocumentsCount());
+        System.out.printf("  * Postings Traversed (P)    : %d postings (out of theoretical max Q*N = %d)%n",
+                cp.postingsTraversedCount(), cp.queryTermsCount() * Math.max(1, cp.corpusDocuments()));
+        System.out.printf("  * Top-K Bounded Heap (K)    : %d%n", cp.topKRequested());
+        System.out.printf("  * Measured Search Latency   : %.3f ms (%d ns)%n", cp.executionTimeMs(), cp.executionTimeNanos());
+        System.out.println();
+        System.out.println(BOLD + "3. THEORETICAL BOUND VERIFICATION:" + RESET);
+        double bypassPercent = cp.corpusDocuments() > 0 ?
+                (1.0 - (double) cp.candidateDocumentsCount() / cp.corpusDocuments()) * 100 : 0.0;
+        System.out.printf("  * Sparse Inverted Filtering : Evaluated %d candidate docs vs %d total corpus docs (%.1f%% corpus bypassed)%n",
+                cp.candidateDocumentsCount(), cp.corpusDocuments(), bypassPercent);
+        int heapOps = (int)(cp.candidateDocumentsCount() * (Math.log(Math.max(2, cp.topKRequested())) / Math.log(2)));
+        int sortOps = (int)(cp.candidateDocumentsCount() * (Math.log(Math.max(2, cp.candidateDocumentsCount())) / Math.log(2)));
+        double speedup = sortOps > 0 && heapOps > 0 ? (double) sortOps / heapOps : 1.0;
+        System.out.printf("  * Min-Heap Heapify Work     : O(M log K) = %d ops vs Unsorted O(M log M) = %d ops (Speedup: %.2fx)%n",
+                heapOps, sortOps, speedup);
+        System.out.println(CYAN + BOLD + "+==================================================================================================+" + RESET);
+    }
+
     // ========================================================================
     // LOCALHOST EMBEDDED HTTP SERVER (ZERO EXTERNAL FILE DEPENDENCY)
     // ========================================================================
@@ -520,6 +572,19 @@ public final class AntigravityFrontend {
                 }
             });
 
+            // API: Complexity Profile
+            server.createContext("/api/complexity", exchange -> {
+                Map<String, String> params = parseQueryParams(exchange.getRequestURI().getQuery());
+                String query = params.getOrDefault("q", "machine learning");
+                AntigravityBackend.ComplexityProfile cp = engine.getComplexityProfile(query);
+                String json = String.format(Locale.US,
+                        "{\"corpusDocuments\":%d,\"vocabularySize\":%d,\"totalTokens\":%d,\"avgDocumentLength\":%.2f,\"lastQuery\":\"%s\",\"queryTermsCount\":%d,\"candidateDocumentsCount\":%d,\"postingsTraversedCount\":%d,\"topKRequested\":%d,\"executionTimeNanos\":%d,\"executionTimeMs\":%.3f}",
+                        cp.corpusDocuments(), cp.vocabularySize(), cp.totalTokens(), cp.avgDocumentLength(),
+                        escapeJson(cp.lastQuery()), cp.queryTermsCount(), cp.candidateDocumentsCount(), cp.postingsTraversedCount(),
+                        cp.topKRequested(), cp.executionTimeNanos(), cp.executionTimeMs());
+                sendJsonResponse(exchange, json);
+            });
+
             server.start();
 
             System.out.println();
@@ -645,6 +710,7 @@ public final class AntigravityFrontend {
     <button class="tab-btn" onclick="showTab('summarizeTab')">TextRank Summary</button>
     <button class="tab-btn" onclick="showTab('keywordsTab')">Keywords</button>
     <button class="tab-btn" onclick="showTab('evaluateTab')">Benchmark Evaluation</button>
+    <button class="tab-btn" onclick="showTab('complexityTab')">Complexity</button>
     <button class="tab-btn" onclick="showTab('statsTab')">Index & Health</button>
   </div>
 
@@ -703,6 +769,18 @@ public final class AntigravityFrontend {
     <button class="action-btn" onclick="runEvaluation()" style="margin-bottom:20px;">Execute Benchmark Suite</button>
     <div id="evalLoading" class="spinner">Running dual retrieval benchmark across test queries...</div>
     <div id="evalResults"></div>
+  </div>
+
+  <!-- COMPLEXITY TAB -->
+  <div id="complexityTab" class="tab-content">
+    <h2>Algorithmic Complexity & Runtime Telemetry</h2>
+    <p style="color:var(--text-muted); margin-bottom:15px;">Formal asymptotic bounds vs live empirical measurement.</p>
+    <div class="input-group">
+      <input type="text" id="complexityQuery" value="machine learning cybersecurity detection" placeholder="Sample query for empirical measurement">
+      <button class="action-btn" onclick="runComplexity()">Measure Complexity</button>
+    </div>
+    <div id="complexityLoading" class="spinner">Profiling runtime execution and heap operations...</div>
+    <div id="complexityResults"></div>
   </div>
 
   <!-- STATS & HEALTH TAB -->
@@ -895,6 +973,39 @@ public final class AntigravityFrontend {
       r.innerHTML = html;
     } catch(e) {
       r.innerHTML = '<p style="color:var(--warning)">Error loading stats: ' + e + '</p>';
+    }
+  }
+
+  async function runComplexity() {
+    const q = document.getElementById('complexityQuery').value.trim();
+    const l = document.getElementById('complexityLoading');
+    const r = document.getElementById('complexityResults');
+    l.style.display = 'block'; r.innerHTML = '';
+    try {
+      const res = await fetch('/api/complexity?q=' + encodeURIComponent(q));
+      const d = await res.json();
+      l.style.display = 'none';
+      let html = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">';
+      html += '<div class="card"><h3>Empirical Runtime Telemetry</h3>';
+      html += '<p><strong>Corpus Docs (N):</strong> ' + d.corpusDocuments + '</p>';
+      html += '<p><strong>Vocabulary Size (V):</strong> ' + d.vocabularySize + '</p>';
+      html += '<p><strong>Total Tokens (T):</strong> ' + d.totalTokens + '</p>';
+      html += '<p><strong>Query Terms (Q):</strong> ' + d.queryTermsCount + '</p>';
+      html += '<p><strong>Candidates (M):</strong> ' + d.candidateDocumentsCount + '</p>';
+      html += '<p><strong>Postings (P):</strong> ' + d.postingsTraversedCount + '</p>';
+      html += '<p><strong>Measured Latency:</strong> ' + d.executionTimeMs + ' ms (' + d.executionTimeNanos + ' ns)</p>';
+      html += '</div>';
+      html += '<div class="card"><h3>Asymptotic Bound Analysis</h3>';
+      html += '<p><strong>Index Build:</strong> O(N &times; L), Space O(T + V)</p>';
+      html += '<p><strong>TF-IDF Search:</strong> O(P + M log K), Space O(M + K)</p>';
+      html += '<p><strong>TextRank:</strong> O(S&sup2; &times; L_s + I &times; S&sup2;), Space O(S&sup2;)</p>';
+      html += '<p><strong>Salient Keywords:</strong> O(U log U), Space O(U)</p>';
+      html += '<p><strong>Heap Speedup:</strong> O(M log K) vs O(M log M)</p>';
+      html += '</div></div>';
+      r.innerHTML = html;
+    } catch(e) {
+      l.style.display = 'none';
+      r.innerHTML = '<p style="color:var(--warning)">Error measuring complexity: ' + e + '</p>';
     }
   }
 </script>

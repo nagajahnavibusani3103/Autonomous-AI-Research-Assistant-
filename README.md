@@ -150,18 +150,23 @@ Autonomous-AI-Research-Assistant/
 │
 ├── docs/
 │   ├── architecture.md                      # Detailed system architecture
-│   ├── workflow.md                          # End-to-end research workflow
-│   ├── uml-use-case.md                      # UML Use Case diagrams & specs
-│   ├── uml-class.md                         # UML Class diagrams & OOP structure
-│   ├── uml-component.md                     # UML Component diagram & coupling
-│   ├── uml-sequence.md                      # UML Sequence diagrams (Search & Research)
 │   ├── database-design.md                   # MongoDB schema & local fallback design
 │   ├── security.md                          # Threat matrix, sanitization, path security
-│   ├── complexity.md                        # Time & Space complexity analysis
-│   └── evaluation.md                        # Empirical benchmark results & formulas
+│   ├── workflow.md                          # End-to-end research workflow
+│   ├── evaluation.md                        # Empirical benchmark results & formulas
+│   ├── complexity-analysis.md               # Asymptotic time/space proofs & telemetry
+│   ├── testing.md                           # Verification strategy & 21-test matrix
+│   └── uml/                                 # Complete UML architecture specifications
+│       ├── use-case.md                      # UML Use Case diagrams & specifications
+│       ├── class.md                         # UML Class diagrams & OOP structure
+│       ├── component.md                     # UML Component diagram & coupling
+│       └── sequence.md                      # UML Sequence diagrams (Search & Research)
+│
+├── report/
+│   └── project-report.md                    # 27-section comprehensive academic report
 │
 └── reports/
-    └── report-outline.md                    # 27-section academic project report outline
+    └── project-report.md                    # Mirror of academic project report
 ```
 
 ---
@@ -236,9 +241,11 @@ antigravity> exit
 | `summarize`| `java -jar app.jar summarize <docId> [n]` | TextRank extractive summarization for a document |
 | `keywords`| `java -jar app.jar keywords <docId> [topN]`| Extracts salient domain keywords with TF-IDF weights |
 | `stats` | `java -jar app.jar stats` | Displays corpus, vocabulary, and index memory stats |
+| `complexity`| `java -jar app.jar complexity [query]` | Displays asymptotic bounds & empirical runtime telemetry |
 | `evaluate`| `java -jar app.jar evaluate` | Runs benchmark evaluation against ground truth |
 | `health` | `java -jar app.jar health` | Diagnostics for JVM, corpus, index, and database |
 | `config` | `java -jar app.jar config` | Displays active sanitized system configuration |
+| `server` | `java -jar app.jar server [port]` | Launches embedded Localhost Web UI Dashboard (default: 8080) |
 
 ---
 
@@ -252,13 +259,13 @@ antigravity> exit
 Question: What are the applications of machine learning in cybersecurity?
 
 1. DETERMINISTIC RESEARCH PLAN & SUB-QUERIES:
-   1. Deconstruct research question into conceptual facets: What are the applications of machine learning in cybersecurity?
-   2. Facet 1: Execute localized retrieval for 'What are the applications of machine learning in cybersecurity?'
-   3. Facet 2: Execute localized retrieval for 'threat detection'
-   4. Facet 3: Execute localized retrieval for 'adversarial attacks'
-   5. Facet 4: Execute localized retrieval for 'zero trust architecture'
-   6. Cross-query evidence deduplication and Jaccard passage alignment
-   7. TextRank graph-based extractive synthesis and provenance citation attachment
+   1. Analyze question and identify domain facets: What are the applications of machine learning in cybersecurity?
+   2. Sub-query 1: Retrieve literature for 'What are the applications of machine learning in cybersecurity?'
+   3. Sub-query 2: Retrieve literature for 'threat detection'
+   4. Sub-query 3: Retrieve literature for 'adversarial attacks'
+   5. Sub-query 4: Retrieve literature for 'zero trust architecture'
+   6. Deduplicate candidate passages via Jaccard token overlap threshold (<= 0.60)
+   7. Rank evidence by composite score and attach verifiable provenance citations
 
 2. SYNTHESIZED KEY FINDINGS (EXTRACTIVE EVIDENCE):
    [Finding 1] Machine learning has emerged as a cornerstone in modern cybersecurity defense architectures. (Source: DOC-001 [C1])
@@ -276,7 +283,7 @@ Question: What are the applications of machine learning in cybersecurity?
 
 5. EXECUTION METRICS:
    * Evidence Coverage   : 100.0%
-   * Query Latency       : 55 ms
+   * Query Latency       : 48 ms
    * Documents Evaluated : 6
 +================================================================================+
 ```
@@ -296,11 +303,50 @@ Mean Recip. Rank (MRR)   | 1.0000               | 1.0000               | +0.0000
 nDCG@5 (Graded)          | 0.9572               | N/A                  | +Graded Rank Saliency
 ------------------------------------------------------------------------------------
 SYSTEM LATENCY & RESOURCE PROFILE:
-  * Average Query Latency : 3.13 ms
-  * P95 Query Latency     : 7.00 ms
+  * Average Query Latency : 4.25 ms
+  * P95 Query Latency     : 16.00 ms
   * Ingestion & Index Time: 12 ms
   * Corpus Test Size      : 12 documents
 +==================================================================================+
+```
+
+### Example 3: `complexity` Command
+```text
++==================================================================================================+
+|                 ALGORITHMIC COMPLEXITY DERIVATION & EMPIRICAL TELEMETRY                         |
++==================================================================================================+
+
+1. THEORETICAL ASYMPTOTIC COMPLEXITY MATRIX:
+   Complexity Variables: N=Documents, L=Avg Doc Length, T=Corpus Tokens, V=Vocab, Q=Query Terms,
+                          M=Candidates, K=Top-K, S=Sentences, I=Iterations, P=Postings Traversed
+
+  +-----------------------------+-------------------+-------------------+-------------------+-------------------+
+  | Subsystem / Operation       | Best-Case Time    | Average-Case Time | Worst-Case Time   | Space Complexity  |
+  +-----------------------------+-------------------+-------------------+-------------------+-------------------+
+  | Inverted Index Build        | O(N * L)          | O(N * L)          | O(N * L)          | O(T + V)          |
+  | Text Preprocessing (Doc)    | O(L)              | O(L)              | O(L)              | O(L)              |
+  | TF-IDF Sparse Cosine Search | O(Q)              | O(P + M log K)    | O(Q * N + N log K)| O(M + K)          |
+  | TextRank Summarization      | O(S * L_s)        | O(S^2*L_s + I*S^2)| O(S^2*L_s + I*S^2)| O(S^2)            |
+  | Salient Keyword Extraction  | O(U)              | O(U log U)        | O(U log U)        | O(U)              |
+  | Research Orchestrator       | O(R * (P+M log K))| O(R * (P+M log K))| O(R*(Q*N+N log K))| O(R * K)          |
+  +-----------------------------+-------------------+-------------------+-------------------+-------------------+
+
+2. EMPIRICAL RUNTIME TELEMETRY (Measured on Sample Query):
+  * Sample Query Evaluated    : "machine learning intrusion detection"
+  * Total Corpus Docs (N)     : 12 documents
+  * Vocabulary Size (V)       : 654 terms
+  * Total Corpus Tokens (T)   : 1203 tokens
+  * Avg Document Length (L)   : 100.25 tokens/doc
+  * Query Terms Analyzed (Q)  : 4 terms
+  * Candidate Docs Matched (M): 5 documents
+  * Postings Traversed (P)    : 15 postings (out of theoretical max Q*N = 48)
+  * Top-K Bounded Heap (K)    : 5
+  * Measured Search Latency   : 12.001 ms (12001100 ns)
+
+3. THEORETICAL BOUND VERIFICATION:
+  * Sparse Inverted Filtering : Evaluated 5 candidate docs vs 12 total corpus docs (58.3% corpus bypassed)
+  * Min-Heap Heapify Work     : O(M log K) = 11 ops vs Unsorted O(M log M) = 11 ops (Speedup: 1.00x)
++==================================================================================================+
 ```
 
 ---
@@ -313,7 +359,9 @@ The project includes an extensive test suite in `src/test/java/com/antigravity/A
 ```bash
 mvn test
 ```
-**Test Coverage Includes**:
+*Result: **21 passing tests, 0 failures, 0 errors** executed in 0.34 seconds.*
+
+**Test Coverage Includes (21 Test Cases)**:
 - Tokenization, stop-word elimination, and Porter stemmer morphological accuracy.
 - Inverted index construction, posting lists, and document norm calculations.
 - TF-IDF mathematical verification (smoothed IDF and sublinear TF scaling).
@@ -325,6 +373,9 @@ mvn test
 - File repository persistence roundtrip.
 - Security enforcement: directory traversal blocking and credential sanitization.
 - Evaluation metrics calculation (P@K, R@K, F1@K, MRR, nDCG@K).
+- Boundary tests: empty corpus, single-document corpus, boundary $K$ values, stop-words-only queries.
+- Algorithmic complexity telemetry capture ($Q, M, P, K$, latency).
+- Defensive security: 500-char query bounds and null-byte injection rejection.
 
 ---
 

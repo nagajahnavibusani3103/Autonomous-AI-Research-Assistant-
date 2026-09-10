@@ -60,6 +60,7 @@ The **Autonomous AI Research Assistant** is engineered in pure Java (Java 17+) a
 - **FR-7: Persistence & Local Fallback**: Persist documents, query telemetry, and research sessions to MongoDB when available; seamlessly fallback to local disk storage when unavailable.
 - **FR-8: Benchmark Evaluation**: Evaluate retrieval effectiveness using Precision@5, Recall@5, F1@5, MRR, and nDCG@5 against a labeled test collection.
 - **FR-9: System Diagnostics & Health Check**: Report operational status across the JVM runtime, local corpus, inverted index, persistence layer, and configuration.
+- **FR-10: Algorithmic Complexity & Telemetry**: Provide exact theoretical asymptotic bounds side-by-side with live empirical measured runtime counters ($Q, M, P, K$, latency).
 
 ---
 
@@ -84,7 +85,8 @@ The **Autonomous AI Research Assistant** is engineered in pure Java (Java 17+) a
 9. **Dual Persistence Abstraction Module**: MongoDB official driver adapter with local file fallback.
 10. **Evaluation & Benchmarking Engine**: Reproducible information retrieval metric calculations.
 11. **Security, Auditing & Configuration Module**: Path canonicalization, input boundary checks, and secret sanitization.
-12. **Polished Java CLI Frontend Module**: Interactive REPL and direct command-line execution interfaces.
+12. **Algorithmic Complexity & Telemetry Engine**: Theoretical bound verification and empirical latency/heap profiling.
+13. **Polished Java CLI & Web UI Frontend Module**: Interactive REPL, direct command execution, and embedded localhost dashboard.
 
 ---
 

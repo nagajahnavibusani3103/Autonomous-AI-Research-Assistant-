@@ -1,7 +1,7 @@
 # UML Use Case Documentation
 
 ## 1. System Actor Identification
-- **Researcher / Security Analyst**: Interacts directly with the CLI interface to query literature, launch autonomous research investigations, generate TextRank summaries, extract keywords, and benchmark retrieval metrics.
+- **Researcher / Security Analyst**: Interacts directly with the CLI interface to query literature, launch autonomous research investigations, generate TextRank summaries, extract keywords, view complexity profiles, and benchmark retrieval metrics.
 - **Corpus Administrator**: Ingests new research papers (.txt / .json), verifies system health diagnostics, and inspects index statistics.
 - **MongoDB Persistence Layer (Secondary Actor)**: Stores document records, query telemetry, and research sessions when connected via TLS.
 - **Local File Repository (Fallback Actor)**: Guarantees offline local persistence when MongoDB is unconfigured or unreachable.
@@ -24,11 +24,12 @@ graph LR
         UC4[Generate TextRank Extractive Summary]
         UC5[Extract Saliency Keywords]
         UC6[Run Ground-Truth Evaluation Benchmark]
-        UC7[Check System Health Diagnostics]
-        UC8[View Corpus & Index Statistics]
-        UC9[Inspect Active Configuration]
-        UC10[Persist Query & Session Telemetry]
-        UC11[Fallback to Local Storage]
+        UC7[Inspect Algorithmic Complexity & Telemetry]
+        UC8[Check System Health Diagnostics]
+        UC9[View Corpus & Index Statistics]
+        UC10[Inspect Active Configuration]
+        UC11[Persist Query & Session Telemetry]
+        UC12[Fallback to Local Storage]
     end
 
     User --> UC2
@@ -38,18 +39,19 @@ graph LR
     User --> UC6
     User --> UC7
     User --> UC8
+    User --> UC9
 
     Admin --> UC1
-    Admin --> UC7
-    Admin --> UC9
+    Admin --> UC8
+    Admin --> UC10
 
-    UC1 -.-> UC10
-    UC2 -.-> UC10
-    UC3 -.-> UC10
+    UC1 -.-> UC11
+    UC2 -.-> UC11
+    UC3 -.-> UC11
 
-    UC10 --> DB
-    UC10 -.->|Failover / Offline| UC11
-    UC11 --> Disk
+    UC11 --> DB
+    UC11 -.->|Failover / Offline| UC12
+    UC12 --> Disk
 ```
 
 ---
@@ -84,3 +86,14 @@ graph LR
   5. Records execution times, sorting latencies to extract average and 95th percentile (P95) latency profiles.
   6. Displays comparative evaluation table with delta improvements.
 - **Postconditions**: Genuine, measured metrics presented without fabrication.
+
+### Use Case UC-7: Inspect Algorithmic Complexity & Telemetry
+- **Primary Actor**: Researcher / Technical Reviewer / Student Evaluator.
+- **Preconditions**: Inverted index populated with research literature.
+- **Main Flow**:
+  1. User issues `complexity [query]` command.
+  2. System retrieves theoretical asymptotic bounds across all pipeline subsystems ($N, L, T, V, Q, M, K, S, I, P, R$).
+  3. Executes sample query or specified query to capture empirical telemetry counters ($Q, M, P, K$, latency).
+  4. Compares observed sparse candidate traversal against theoretical worst-case dense matrix scanning.
+  5. Displays side-by-side asymptotic matrix, empirical metrics, and min-heap efficiency verification.
+- **Postconditions**: Complete complexity profile displayed for academic defense and audit.

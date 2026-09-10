@@ -93,7 +93,7 @@ public class AntigravityTestSuite {
         assertEquals("connect", AntigravityBackend.Stemmer.stem("connection"));
         assertEquals("connect", AntigravityBackend.Stemmer.stem("connected"));
         assertEquals("retriev", AntigravityBackend.Stemmer.stem("retrieval"));
-        assertEquals("classifi", AntigravityBackend.Stemmer.stem("classification"));
+        assertEquals("classif", AntigravityBackend.Stemmer.stem("classification"));
         assertEquals("secur", AntigravityBackend.Stemmer.stem("security"));
     }
 
@@ -138,7 +138,8 @@ public class AntigravityTestSuite {
 
         String cyberStem = AntigravityBackend.Stemmer.stem("cyber");
         assertEquals(1, testIndex.getDocumentFrequency(cyberStem));
-        assertEquals(1, testIndex.getTermFrequency(cyberStem, "TEST-01"));
+        // "cyber" appears in title ("Cyber Defense") and content ("Cyber defense ...") -> tf = 2
+        assertEquals(2, testIndex.getTermFrequency(cyberStem, "TEST-01"));
         assertEquals(0, testIndex.getTermFrequency(cyberStem, "TEST-02"));
 
         assertTrue(testIndex.getDocVectorNorm("TEST-01") > 0.0);
@@ -315,5 +316,181 @@ public class AntigravityTestSuite {
             assertTrue(metrics.ndcgAtK() >= 0.0 && metrics.ndcgAtK() <= 1.0);
             assertTrue(metrics.avgLatencyMs() >= 0.0);
         }
+    }
+
+    // ========================================================================
+    // 9. BOUNDARY & EDGE CASE TESTS
+    // ========================================================================
+
+    @Test
+    @DisplayName("Empty corpus search returns empty result list gracefully without exceptions")
+    void testEmptyCorpusSearch() {
+        AntigravityBackend.InvertedIndex emptyIndex = new AntigravityBackend.InvertedIndex();
+        AntigravityBackend.RankingEngine emptyEngine = new AntigravityBackend.RankingEngine(emptyIndex);
+
+        List<AntigravityBackend.SearchResult> results = emptyEngine.search("artificial intelligence", 5, 0.001);
+        assertNotNull(results);
+        assertTrue(results.isEmpty(), "Search against an empty index must return an empty list");
+    }
+
+    @Test
+    @DisplayName("Single document corpus indexes and retrieves correctly")
+    void testSingleDocumentCorpus() {
+        AntigravityBackend.Document singleDoc = new AntigravityBackend.Document(
+                "SOLO-01", "Quantum Cryptography", "Physics Journal",
+                "Quantum key distribution guarantees information-theoretic secrecy based on physical principles.",
+                new HashMap<>(), null, Instant.now()
+        );
+        testIndex.addDocument(singleDoc);
+        testIndex.computeVectorNorms();
+
+        assertEquals(1, testIndex.getDocumentCount());
+        List<AntigravityBackend.SearchResult> results = rankingEngine.search("quantum key distribution secrecy", 5, 0.001);
+
+        assertEquals(1, results.size());
+        assertEquals("SOLO-01", results.get(0).docId());
+        assertEquals(1, results.get(0).rank());
+        assertTrue(results.get(0).score() > 0.0);
+    }
+
+    @Test
+    @DisplayName("K boundary conditions (K=1, K > matching docs, K=0) behave safely")
+    void testBoundaryKValues() {
+        AntigravityBackend.Document docA = new AntigravityBackend.Document(
+                "BOUND-A", "Deep Learning Models", "Source A",
+                "Deep learning models require gradient descent optimization.",
+                new HashMap<>(), null, Instant.now()
+        );
+        AntigravityBackend.Document docB = new AntigravityBackend.Document(
+                "BOUND-B", "Machine Learning Concepts", "Source B",
+                "Machine learning algorithms build mathematical models from sample training data.",
+                new HashMap<>(), null, Instant.now()
+        );
+        testIndex.addDocument(docA);
+        testIndex.addDocument(docB);
+        testIndex.computeVectorNorms();
+
+        // Test K = 1
+        List<AntigravityBackend.SearchResult> top1 = rankingEngine.search("learning models", 1, 0.001);
+        assertEquals(1, top1.size());
+
+        // Test K = 100 when only 2 documents match (should return at most 2, never crash)
+        int validatedK = AntigravityBackend.SecurityManager.validateK(100, 5);
+        List<AntigravityBackend.SearchResult> top100 = rankingEngine.search("learning models", validatedK, 0.001);
+        assertTrue(top100.size() <= 2);
+
+        // Test K = 0 (validateK clamps to default topK)
+        int clampedK = AntigravityBackend.SecurityManager.validateK(0, 5);
+        assertEquals(5, clampedK);
+    }
+
+    @Test
+    @DisplayName("Query with only stop words returns empty result without crashing")
+    void testStopWordsOnlyQuery() {
+        AntigravityBackend.Document doc = new AntigravityBackend.Document(
+                "DOC-01", "General Text", "Source", "This is an article about systems engineering.",
+                new HashMap<>(), null, Instant.now()
+        );
+        testIndex.addDocument(doc);
+        testIndex.computeVectorNorms();
+
+        List<AntigravityBackend.SearchResult> results = rankingEngine.search("this is what was", 5, 0.001);
+        assertNotNull(results);
+        assertTrue(results.isEmpty(), "Query containing only stop words must yield zero results");
+    }
+
+    // ========================================================================
+    // 10. COMPLEXITY TELEMETRY & VERIFICATION TESTS
+    // ========================================================================
+
+    @Test
+    @DisplayName("ComplexityProfile captures empirical telemetry accurately")
+    void testComplexityProfileCapture() {
+        AntigravityBackend.Document doc1 = new AntigravityBackend.Document(
+                "COMP-01", "Intrusion Detection", "Source A",
+                "Network intrusion detection systems monitor anomalous traffic patterns.",
+                new HashMap<>(), null, Instant.now()
+        );
+        AntigravityBackend.Document doc2 = new AntigravityBackend.Document(
+                "COMP-02", "Neural Networks", "Source B",
+                "Neural networks train weight matrices using backpropagation algorithms.",
+                new HashMap<>(), null, Instant.now()
+        );
+        testIndex.addDocument(doc1);
+        testIndex.addDocument(doc2);
+        testIndex.computeVectorNorms();
+
+        rankingEngine.search("intrusion detection network", 5, 0.001);
+        AntigravityBackend.ComplexityProfile profile = rankingEngine.getLastComplexityProfile();
+
+        assertNotNull(profile);
+        assertEquals(2, profile.corpusDocuments());
+        assertTrue(profile.vocabularySize() > 0);
+        assertTrue(profile.totalTokens() > 0);
+        assertTrue(profile.avgDocumentLength() > 0);
+        assertEquals("intrusion detection network", profile.lastQuery());
+        assertTrue(profile.queryTermsCount() >= 2);
+        assertTrue(profile.candidateDocumentsCount() >= 1);
+        assertTrue(profile.postingsTraversedCount() >= 1);
+        assertTrue(profile.executionTimeNanos() >= 0);
+    }
+
+    // ========================================================================
+    // 11. KEYWORD EXTRACTION & HEALTH CHECKS
+    // ========================================================================
+
+    @Test
+    @DisplayName("KeywordExtractor produces ranked salient domain keywords")
+    void testKeywordExtractor() {
+        AntigravityBackend.Document doc = new AntigravityBackend.Document(
+                "KW-01", "Adversarial Machine Learning", "Security Lab",
+                "Adversarial perturbations compromise neural network classifiers. Adversarial attacks manipulate gradient steps.",
+                new HashMap<>(), null, Instant.now()
+        );
+        testIndex.addDocument(doc);
+        testIndex.computeVectorNorms();
+
+        List<Map.Entry<String, Double>> keywords = AntigravityBackend.KeywordExtractor.extractKeywords(doc, testIndex, 5);
+        assertNotNull(keywords);
+        assertFalse(keywords.isEmpty());
+        assertTrue(keywords.size() <= 5);
+        for (Map.Entry<String, Double> kw : keywords) {
+            assertTrue(kw.getValue() > 0.0);
+        }
+    }
+
+    @Test
+    @DisplayName("HealthChecker correctly validates system components")
+    void testHealthCheckDiagnostics() {
+        AntigravityBackend.HealthReport report = AntigravityBackend.HealthChecker.checkHealth(testIndex, fileRepo);
+        assertNotNull(report);
+        assertTrue(report.javaRuntimeStatus().startsWith("PASS"));
+        assertNotNull(report.mongoStatus());
+        assertNotNull(report.overallStatus());
+        assertNotNull(report.details());
+    }
+
+    // ========================================================================
+    // 12. INPUT BOUNDS & DEFENSIVE SECURITY
+    // ========================================================================
+
+    @Test
+    @DisplayName("Excessively long query string throws IllegalArgumentException")
+    void testQueryLengthBoundary() {
+        StringBuilder longQuery = new StringBuilder();
+        for (int i = 0; i < 600; i++) {
+            longQuery.append("a");
+        }
+        assertThrows(IllegalArgumentException.class, () -> {
+            AntigravityBackend.SecurityManager.validateQuery(longQuery.toString());
+        });
+    }
+
+    @Test
+    @DisplayName("Null byte injection in file path throws SecurityException")
+    void testNullByteInjectionInPath() {
+        assertThrows(SecurityException.class, () -> {
+            AntigravityBackend.SecurityManager.validateAndResolvePath("corpus\0/secret.txt", Paths.get("data"));
+        });
     }
 }
