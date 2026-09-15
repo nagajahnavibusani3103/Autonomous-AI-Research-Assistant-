@@ -3,7 +3,7 @@
 **Course**: Advanced Programming in Java  
 **Project Title**: Autonomous AI Research Assistant  
 **Language**: Pure Java (Java 17+ / Java 21)  
-**Architecture**: Single-Frontend (`AntigravityFrontend.java`) + Single-Backend (`AntigravityBackend.java`)  
+**Architecture**: Single-Frontend + Single-Backend 
 **Interface**: Command-Line Interface (CLI) + Embedded Localhost HTTP Web UI  
 **Database**: MongoDB Atlas with Automated Local File Persistence Fallback  
 **External Generative AI / LLM APIs**: NONE (100% Local Execution)  
@@ -27,7 +27,7 @@
 14. Autonomous Research Planning & Evidence Orchestration
 15. Database & Persistence Design (MongoDB + Local Fallback)
 16. Security Engineering & Threat Mitigation (5/5 Standard)
-17. Verification & Test Strategy (`AntigravityTestSuite`)
+17. Verification & Test Strategy
 18. Evaluation Framework & Mathematical Formulations
 19. Performance Profiling & Latency Benchmarks
 20. Algorithmic Time Complexity Analysis
@@ -37,12 +37,11 @@
 24. Key Academic & Technical Learnings
 25. Assumptions & Architectural Limitations
 26. Future Enhancements & Scalability Roadmap
-27. Academic & Technical References
 
 ---
 
 ## 1. Cover Page & Project Metadata
-* **Student Project**: Autonomous AI Research Assistant (Antigravity)
+* **Student Project**: Autonomous AI Research Assistant 
 * **Author / Developer**: B. Naga Jahnavi
 * **Core Technologies**: Java SE 17/21, MongoDB Java Sync Driver 4.11.1, JUnit Jupiter 5.10.2, Apache Maven 3.9.6
 * **Domain**: Information Retrieval, Natural Language Processing, Vector Space Models, Autonomous AI Systems
@@ -103,8 +102,8 @@ There is a direct need for an on-premise, deterministic IR assistant that:
 
 ## 7. System Architecture & Design Patterns
 The system is divided into two primary source compilation units:
-1. `AntigravityFrontend.java`: Contains the CLI REPL, command routing, ANSI visual formatting, and embedded localhost HTTP web server with JSON REST APIs (`/api/search`, `/api/research`, `/api/complexity`, `/api/evaluate`, `/api/health`, `/api/stats`).
-2. `AntigravityBackend.java`: Contains all core business logic, NLP preprocessors, Inverted Index, TF-IDF engine, TextRank summarizer, research planner, security manager, and persistence adapters.
+1. `Frontend.java`: Contains the CLI REPL, command routing, ANSI visual formatting, and embedded localhost HTTP web server with JSON REST APIs (`/api/search`, `/api/research`, `/api/complexity`, `/api/evaluate`, `/api/health`, `/api/stats`).
+2. `Backend.java`: Contains all core business logic, NLP preprocessors, Inverted Index, TF-IDF engine, TextRank summarizer, research planner, security manager, and persistence adapters.
 
 ### Key Design Patterns:
 * **Facade Pattern (`EngineFacade`)**: Exposes a unified API concealing subsystem complexity.
@@ -150,7 +149,7 @@ The system is divided into two primary source compilation units:
 ## 9. UML Diagrams
 The complete set of UML diagrams is maintained in the `docs/uml/` directory:
 * **Use Case Diagram** (`docs/uml/use-case.md`): Actors, use cases (UC1–UC12), and persistence failover boundary.
-* **Class Diagram** (`docs/uml/class.md`): Static structure showing `AntigravityFrontend`, `EngineFacade`, records, and repositories.
+* **Class Diagram** (`docs/uml/class.md`): Static structure showing `Frontend`, `EngineFacade`, records, and repositories.
 * **Component Diagram** (`docs/uml/component.md`): Modular decomposition and subsystem linkages.
 * **Sequence Diagrams** (`docs/uml/sequence.md`): End-to-end execution sequences for Search, Autonomous Research, and Complexity Profiling.
 
@@ -158,7 +157,7 @@ The complete set of UML diagrams is maintained in the `docs/uml/` directory:
 
 ## 10. Design Rationale & Technical Trade-offs
 1. **Two-Source-File Constraint vs Multi-Package Architecture**:
-   To comply with the university project submission standard, all frontend components reside in `AntigravityFrontend.java` and backend components in `AntigravityBackend.java`. Clean modularity is achieved through encapsulated static classes rather than sprawling package trees.
+   To comply with the university project submission standard, all frontend components reside in `Frontend.java` and backend components in `Backend.java`. Clean modularity is achieved through encapsulated static classes rather than sprawling package trees.
 2. **Sparse Inverted Index vs Dense Matrix Multiplications**:
    Dense vector models allocate $N \times V$ matrices, wasting gigabytes of memory on zero entries. The sparse inverted index only examines documents containing at least one query term, bypassing 50% to 95% of the corpus.
 3. **TextRank Extractive Summarization vs Generative Summarization**:
@@ -218,8 +217,7 @@ The complete set of UML diagrams is maintained in the `docs/uml/` directory:
 
 ---
 
-## 17. Verification & Test Strategy (`AntigravityTestSuite`)
-The automated test suite (`src/test/java/com/antigravity/AntigravityTestSuite.java`) contains **21 comprehensive unit, integration, and security test cases**:
+## 17. Verification & Test Strategy 
 * NLP tokenization, stop-words, and Porter stemming.
 * Mathematical verification of smoothed IDF, sublinear TF, and vector norms.
 * Inverted index construction and posting list integrity.
@@ -363,10 +361,3 @@ Question: What are the applications of machine learning in cybersecurity?
 3. **Faceted Metadata Filtering**: Enable search queries filtered by publication year, author, or threat category.
 
 ---
-
-## 27. Academic & Technical References
-1. Salton, G., Wong, A., & Yang, C. S. (1975). *A Vector Space Model for Automatic Indexing*. Communications of the ACM, 18(11), 613-620.
-2. Manning, C. D., Raghavan, P., & Schütze, H. (2008). *Introduction to Information Retrieval*. Cambridge University Press.
-3. Porter, M. F. (1980). *An algorithm for suffix stripping*. Program: electronic library and information systems, 14(3), 130-137.
-4. Mihalcea, R., & Tarau, P. (2004). *TextRank: Bringing Order into Text*. Empirical Methods in Natural Language Processing (EMNLP).
-5. Page, L., Brin, S., Motwani, R., & Winograd, T. (1999). *The PageRank Citation Ranking: Bringing Order to the Web*. Stanford InfoLab Technical Report.
